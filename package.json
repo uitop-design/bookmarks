@@ -20,7 +20,7 @@
     "test": "npm test -w apps/api"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.8",
+    "@biomejs/biome": "2.6.8",
     "concurrently": "^10.0.7"
   }
 }
