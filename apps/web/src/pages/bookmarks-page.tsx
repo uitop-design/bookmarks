@@ -2,6 +2,7 @@ import { PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { AppHeader } from '@/components/app-header';
 import { AddBookmarkDialog } from '@/components/bookmarks/add-bookmark-dialog';
+import { BookmarkActions } from '@/components/bookmarks/bookmark-actions';
 import { BookmarkCard } from '@/components/bookmarks/bookmark-card';
 import { BookmarkList } from '@/components/bookmarks/bookmark-list';
 import { TagFilter } from '@/components/bookmarks/tag-filter';
@@ -43,6 +44,7 @@ export function BookmarksPage() {
                 bookmark={bookmark}
                 selectedTags={filters.tags}
                 onTagClick={toggleTag}
+                menu={<BookmarkActions bookmark={bookmark} />}
               />
             )}
           />
