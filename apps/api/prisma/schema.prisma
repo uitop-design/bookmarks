@@ -1,0 +1,55 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MetadataStatus {
+  PENDING
+  OK
+  FAILED
+
+  @@map("metadata_status")
+}
+
+model Bookmark {
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url            String                   @unique @db.VarChar(2048)
+  title          String                   @db.VarChar(200)
+  description    String?                  @db.VarChar(500)
+  siteName       String?                  @map("site_name") @db.VarChar(200)
+  faviconUrl     String?                  @map("favicon_url") @db.VarChar(2048)
+  metadataStatus MetadataStatus           @default(PENDING) @map("metadata_status")
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  search         Unsupported("tsvector")?
+  tags           BookmarkTag[]
+
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
+  @@index([search], type: Gin)
+  @@map("bookmarks")
+}
+
+model Tag {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String        @unique @db.VarChar(24)
+  bookmarks BookmarkTag[]
+
+  @@map("tags")
+}
+
+model BookmarkTag {
+  bookmarkId String   @map("bookmark_id") @db.Uuid
+  tagId      String   @map("tag_id") @db.Uuid
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookmarkId, tagId])
+  @@index([tagId])
+  @@map("bookmark_tags")
+}
