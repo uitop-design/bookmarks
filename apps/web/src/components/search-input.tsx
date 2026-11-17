@@ -2,10 +2,10 @@ import { SearchIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SEARCH_MAX_LENGTH } from '@/hooks/use-bookmark-filters';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 const SEARCH_DEBOUNCE_MS = 300;
-const SEARCH_MAX_LENGTH = 100;
 
 interface SearchInputProps {
   query: string;

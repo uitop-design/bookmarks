@@ -11,7 +11,13 @@ interface TagFilterProps {
 }
 
 export function TagFilter({ selected, onToggle, onClear }: TagFilterProps) {
-  const { data: tags, isPending, isError } = useTags();
+  const { data, isPending, isError } = useTags();
+  const tags = data && [
+    ...selected
+      .filter((name) => !data.some((tag) => tag.name === name))
+      .map((name) => ({ name, count: 0 })),
+    ...data,
+  ];
 
   return (
     <nav aria-label="Filter by tag" className="flex flex-col gap-2">

@@ -1,17 +1,24 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import type { BookmarkFilters } from '@/api/schemas';
+import { MAX_TAGS, normalizeTag, TAG_PATTERN } from '@/lib/tags';
+
+export const SEARCH_MAX_LENGTH = 100;
 
 function parseTags(value: string | null): string[] {
   if (!value) {
     return [];
   }
-  return [...new Set(value.split(',').map((tag) => tag.trim().toLowerCase()))].filter(Boolean);
+  const tags = value
+    .split(',')
+    .map(normalizeTag)
+    .filter((tag) => TAG_PATTERN.test(tag));
+  return [...new Set(tags)].slice(0, MAX_TAGS);
 }
 
 export function useBookmarkFilters() {
   const [params, setParams] = useSearchParams();
-  const q = params.get('q')?.trim() ?? '';
+  const q = params.get('q')?.trim().slice(0, SEARCH_MAX_LENGTH).trim() ?? '';
   const tagsParam = params.get('tags');
 
   const filters = useMemo<BookmarkFilters>(
