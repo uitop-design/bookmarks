@@ -1,7 +1,39 @@
-import swagger from '@fastify/swagger';
+import swagger, { type SwaggerTransformObject } from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 import { jsonSchemaTransform, jsonSchemaTransformObject } from 'fastify-type-provider-zod';
+
+const SCHEMA_REF_PREFIX = '#/components/schemas/';
+
+function referencedSchemas(value: unknown): Set<string> {
+  const names = new Set<string>();
+  JSON.stringify(value, (key, nested: unknown) => {
+    if (key === '$ref' && typeof nested === 'string' && nested.startsWith(SCHEMA_REF_PREFIX)) {
+      names.add(nested.slice(SCHEMA_REF_PREFIX.length));
+    }
+    return nested;
+  });
+  return names;
+}
+
+const transformObject: SwaggerTransformObject = (input) => {
+  const document = jsonSchemaTransformObject(input);
+  const schemas = 'components' in document ? document.components?.schemas : undefined;
+  if (!schemas) {
+    return document;
+  }
+  let used = referencedSchemas(document.paths);
+  for (let size = -1; size !== used.size; ) {
+    size = used.size;
+    used = new Set([...used, ...referencedSchemas([...used].map((name) => schemas[name]))]);
+  }
+  for (const name of Object.keys(schemas)) {
+    if (!used.has(name)) {
+      delete schemas[name];
+    }
+  }
+  return document;
+};
 
 export const swaggerPlugin = fp(
   async (app) => {
@@ -21,7 +53,7 @@ export const swaggerPlugin = fp(
         ],
       },
       transform: jsonSchemaTransform,
-      transformObject: jsonSchemaTransformObject,
+      transformObject,
     });
     await app.register(swaggerUi, { routePrefix: '/docs' });
   },
