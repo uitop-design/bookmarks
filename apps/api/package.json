@@ -10,7 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "typecheck": "prisma generate && tsc --noEmit",
-    "test": "vitest run",
+    "test": "prisma generate && vitest run",
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed"
